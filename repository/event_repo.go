@@ -64,6 +64,7 @@ func (e *eventRepo) UpdateDate(name string, date time.Time) error {
 func (e *eventRepo) List() *[]domain.Event {
 	var events []domain.Event
 
+	e.mutex.RLock()
 	for _, event := range e.events {
 		events = append(events, *event)
 	}
@@ -71,6 +72,7 @@ func (e *eventRepo) List() *[]domain.Event {
 	sort.Slice(events, func(i, j int) bool {
 		return events[i].Date.Before(events[j].Date)
 	})
+	e.mutex.RUnlock()
 
 	return &events
 }
