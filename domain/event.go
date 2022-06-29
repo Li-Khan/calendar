@@ -12,7 +12,7 @@ type EventUsecase interface {
 	Delete(name string)
 	UpdateName(old string, new string) error
 	UpdateDate(name string, date time.Time) error
-	List() []Event
+	List() *[]Event
 }
 
 type EventRepository interface {
