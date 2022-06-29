@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/Li-Khan/calendar/domain"
+	"sort"
 	"sync"
 	"time"
 )
@@ -30,16 +31,48 @@ func (e *eventRepo) Add(event *domain.Event) error {
 	return nil
 }
 
-func (e *eventRepo) Delete(name string) error {
+func (e *eventRepo) Delete(name string) {
+	e.mutex.RLock()
+	delete(e.events, name)
+	e.mutex.RUnlock()
+}
+
+func (e *eventRepo) UpdateName(old string, new string) error {
+	e.mutex.RLock()
+	event := e.events[old]
+	e.mutex.RUnlock()
+
+	event.Name = new
+
+	err := e.Add(event)
+	if err != nil {
+		return err
+	}
+
+	e.Delete(old)
+
 	return nil
 }
 
-func (e *eventRepo) Update(event *domain.Event) error {
+func (e *eventRepo) UpdateDate(name string, date time.Time) error {
+	e.mutex.RLock()
+	e.events[name].Date = date
+	e.mutex.RUnlock()
 	return nil
 }
 
 func (e *eventRepo) List() *[]domain.Event {
-	return nil
+	var events []domain.Event
+
+	for _, event := range e.events {
+		events = append(events, *event)
+	}
+
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Date.Before(events[j].Date)
+	})
+
+	return &events
 }
 
 func (e *eventRepo) checkExist(event *domain.Event) error {
