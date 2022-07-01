@@ -107,6 +107,7 @@ func (c *Calendar) isDateAlreadyExist(date time.Time) bool {
 	c.mutex.Lock()
 	for _, val := range c.events {
 		if val.Date == date {
+			c.mutex.Unlock()
 			return true
 		}
 	}
