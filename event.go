@@ -1,7 +1,7 @@
 package calendar
 
 import (
-	"github.com/Li-Khan/calendar/domain"
+	"errors"
 	"sort"
 	"sync"
 	"time"
@@ -86,11 +86,11 @@ func (c *Calendar) Delete(name string) {
 
 func (c *Calendar) checkExist(event Event) error {
 	if c.isNameAlreadyExist(event.Name) {
-		return domain.ErrAlreadyExist
+		return errors.New("name already exist")
 	}
 
 	if c.isDateAlreadyExist(event.Date) {
-		return domain.ErrDateAlreadyExist
+		return errors.New("date already exist")
 	}
 
 	return nil
