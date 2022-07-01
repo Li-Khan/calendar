@@ -7,109 +7,110 @@ import (
 	"time"
 )
 
-type Event struct {
-	Name string
-	Date time.Time
-	data eventData
-}
-
-type eventData struct {
+type Calendar struct {
 	mutex  sync.Mutex
 	events map[string]*Event
 }
 
-func NewEvent() *Event {
-	return &Event{
-		data: eventData{
-			events: make(map[string]*Event),
-		},
+type Event struct {
+	Name string
+	Date time.Time
+}
+
+func NewCalendar() *Calendar {
+	return &Calendar{
+		events: make(map[string]*Event),
 	}
 }
 
-func (e *Event) Add(name string, date time.Time) error {
-	err := e.checkExist()
+func (c *Calendar) Add(name string, date time.Time) error {
+	event := Event{
+		Name: name,
+		Date: date,
+	}
+	err := c.checkExist(event)
 	if err != nil {
 		return err
 	}
 
-	e.data.mutex.Lock()
-	e.data.events[e.Name] = e
-	e.data.mutex.Unlock()
+	c.mutex.Lock()
+	c.events[name] = &event
+	c.mutex.Unlock()
+
 	return nil
 }
 
-func (e *Event) UpdateName(old string, new string) error {
-	e.data.mutex.Lock()
-	event := e.data.events[old]
-	e.data.mutex.Unlock()
+func (c *Calendar) UpdateName(old string, new string) error {
+	c.mutex.Lock()
+	event := c.events[old]
+	c.mutex.Unlock()
 
 	event.Name = new
+	c.Delete(old)
 
-	err := e.Add(event.Name, event.Date)
+	err := c.Add(event.Name, event.Date)
 	if err != nil {
 		return err
 	}
 
-	e.Delete(old)
-
 	return nil
 }
-func (e *Event) UpdateDate(name string, date time.Time) error {
-	e.data.mutex.Lock()
-	e.data.events[name].Date = date
-	e.data.mutex.Unlock()
+func (c *Calendar) UpdateDate(name string, date time.Time) error {
+	c.mutex.Lock()
+	c.events[name].Date = date
+	c.mutex.Unlock()
 	return nil
 }
 
-func (e *Event) List() *[]Event {
+func (c *Calendar) List() *[]Event {
 	var events []Event
 
-	e.data.mutex.Lock()
-	for _, event := range e.data.events {
+	c.mutex.Lock()
+	for _, event := range c.events {
 		events = append(events, *event)
 	}
 
 	sort.Slice(events, func(i, j int) bool {
 		return events[i].Date.Before(events[j].Date)
 	})
-	e.data.mutex.Unlock()
+	c.mutex.Unlock()
 
 	return &events
 }
 
-func (e *Event) Delete(name string) {
-	e.data.mutex.Lock()
-	delete(e.data.events, name)
-	e.data.mutex.Unlock()
+func (c *Calendar) Delete(name string) {
+	c.mutex.Lock()
+	delete(c.events, name)
+	c.mutex.Unlock()
 }
 
-func (e *Event) checkExist() error {
-	if e.isNameAlreadyExist(e.Name) {
+func (c *Calendar) checkExist(event Event) error {
+	if c.isNameAlreadyExist(event.Name) {
 		return domain.ErrAlreadyExist
 	}
 
-	if e.isDateAlreadyExist(e.Date) {
+	if c.isDateAlreadyExist(event.Date) {
 		return domain.ErrDateAlreadyExist
 	}
 
 	return nil
 }
 
-func (e *Event) isNameAlreadyExist(name string) bool {
-	e.data.mutex.Lock()
-	_, ok := e.data.events[name]
-	e.data.mutex.Unlock()
+func (c *Calendar) isNameAlreadyExist(name string) bool {
+	c.mutex.Lock()
+	_, ok := c.events[name]
+	c.mutex.Unlock()
 	return ok
 }
 
-func (e *Event) isDateAlreadyExist(date time.Time) bool {
-	e.data.mutex.Lock()
-	for _, val := range e.data.events {
+func (c *Calendar) isDateAlreadyExist(date time.Time) bool {
+	c.mutex.Lock()
+	for _, val := range c.events {
 		if val.Date == date {
 			return true
 		}
 	}
-	e.data.mutex.Unlock()
+	c.mutex.Unlock()
 
 	return false
 }
