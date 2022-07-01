@@ -13,8 +13,8 @@ type Calendar struct {
 }
 
 type Event struct {
-	Name string
-	Date time.Time
+	Name string    `json:"name,omitempty"`
+	Date time.Time `json:"date,omitempty"`
 }
 
 func NewCalendar() *Calendar {
