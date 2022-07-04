@@ -65,10 +65,17 @@ func (c *Calendar) UpdateName(old string, new string) error {
 
 	return nil
 }
-func (c *Calendar) UpdateDate(name string, date time.Time) {
+func (c *Calendar) UpdateDate(name string, date time.Time) error {
 	c.mutex.Lock()
-	c.events[name].Date = date
+	var err error
+	_, ok := c.events[name]
+	if !ok {
+		err = ErrEventNotExist
+	} else {
+		c.events[name].Date = date
+	}
 	c.mutex.Unlock()
+	return err
 }
 
 func (c *Calendar) List() *[]Event {
