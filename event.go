@@ -100,7 +100,7 @@ func (c *Calendar) ListEventsForDay() *[]Event {
 	c.mutex.Lock()
 	for _, event := range c.events {
 		day := event.Date.Add(24 * time.Hour)
-		if event.Date.Before(day) {
+		if event.Date.After(day) {
 			events = append(events, *event)
 		}
 	}
@@ -119,7 +119,7 @@ func (c *Calendar) ListEventsForWeek() *[]Event {
 	c.mutex.Lock()
 	for _, event := range c.events {
 		week := event.Date.Add((24 * time.Hour) * 7)
-		if event.Date.Before(week) {
+		if event.Date.After(week) {
 			events = append(events, *event)
 		}
 	}
@@ -138,7 +138,7 @@ func (c *Calendar) ListEventsForMonth() *[]Event {
 	c.mutex.Lock()
 	for _, event := range c.events {
 		month := event.Date.Add((24 * time.Hour) * 30)
-		if event.Date.Before(month) {
+		if event.Date.After(month) {
 			events = append(events, *event)
 		}
 	}
