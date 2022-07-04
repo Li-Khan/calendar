@@ -50,6 +50,7 @@ func (c *Calendar) UpdateName(old string, new string) error {
 	c.mutex.Lock()
 	event := c.events[old]
 	if event == nil {
+		c.mutex.Unlock()
 		return ErrEventNotExist
 	}
 	c.mutex.Unlock()
