@@ -94,6 +94,63 @@ func (c *Calendar) List() *[]Event {
 	return &events
 }
 
+func (c *Calendar) ListEventsForDay() *[]Event {
+	var events []Event
+
+	c.mutex.Lock()
+	for _, event := range c.events {
+		day := event.Date.Add(24 * time.Hour)
+		if event.Date.Before(day) {
+			events = append(events, *event)
+		}
+	}
+
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Date.Before(events[j].Date)
+	})
+	c.mutex.Unlock()
+
+	return &events
+}
+
+func (c *Calendar) ListEventsForWeek() *[]Event {
+	var events []Event
+
+	c.mutex.Lock()
+	for _, event := range c.events {
+		week := event.Date.Add((24 * time.Hour) * 7)
+		if event.Date.Before(week) {
+			events = append(events, *event)
+		}
+	}
+
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Date.Before(events[j].Date)
+	})
+	c.mutex.Unlock()
+
+	return &events
+}
+
+func (c *Calendar) ListEventsForMonth() *[]Event {
+	var events []Event
+
+	c.mutex.Lock()
+	for _, event := range c.events {
+		month := event.Date.Add((24 * time.Hour) * 30)
+		if event.Date.Before(month) {
+			events = append(events, *event)
+		}
+	}
+
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Date.Before(events[j].Date)
+	})
+	c.mutex.Unlock()
+
+	return &events
+}
+
 func (c *Calendar) Delete(name string) {
 	c.mutex.Lock()
 	delete(c.events, name)
