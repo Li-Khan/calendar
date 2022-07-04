@@ -211,7 +211,7 @@ func inTimeSpan(start, end, check time.Time) bool {
 }
 
 func timeNow() (time.Time, error) {
-	now, err := time.Parse(time.Now().Format("2006-01-02"), "2006-01-02")
+	now, err := time.Parse("2006-01-02", time.Now().Format("2006-01-02"))
 	if err != nil {
 		return time.Time{}, err
 	}
