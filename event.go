@@ -17,6 +17,12 @@ type Event struct {
 	Date time.Time `json:"date,omitempty"`
 }
 
+var (
+	ErrNameAlreadyExist error = errors.New("name already exist")
+	ErrDateAlreadyExist error = errors.New("date already exist")
+	ErrEventNotExist    error = errors.New("the event does not exist")
+)
+
 func NewCalendar() *Calendar {
 	return &Calendar{
 		events: make(map[string]*Event),
@@ -43,6 +49,9 @@ func (c *Calendar) Add(name string, date time.Time) error {
 func (c *Calendar) UpdateName(old string, new string) error {
 	c.mutex.Lock()
 	event := c.events[old]
+	if event == nil {
+		return ErrEventNotExist
+	}
 	c.mutex.Unlock()
 
 	event.Name = new
@@ -86,11 +95,11 @@ func (c *Calendar) Delete(name string) {
 
 func (c *Calendar) checkExist(event Event) error {
 	if c.isNameAlreadyExist(event.Name) {
-		return errors.New("name already exist")
+		return ErrNameAlreadyExist
 	}
 
 	if c.isDateAlreadyExist(event.Date) {
-		return errors.New("date already exist")
+		return ErrDateAlreadyExist
 	}
 
 	return nil
