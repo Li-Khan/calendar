@@ -94,13 +94,17 @@ func (c *Calendar) List() *[]Event {
 	return &events
 }
 
-func (c *Calendar) ListEventsForDay() *[]Event {
+func (c *Calendar) ListEventsForDay() (*[]Event, error) {
 	var events []Event
 
 	c.mutex.Lock()
+	now, err := timeNow()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, event := range c.events {
-		day := event.Date.Add(24 * time.Hour)
-		if event.Date.After(day) {
+		if inTimeSpan(now, now.Add(24*time.Hour), event.Date) {
 			events = append(events, *event)
 		}
 	}
@@ -110,16 +114,20 @@ func (c *Calendar) ListEventsForDay() *[]Event {
 	})
 	c.mutex.Unlock()
 
-	return &events
+	return &events, nil
 }
 
-func (c *Calendar) ListEventsForWeek() *[]Event {
+func (c *Calendar) ListEventsForWeek() (*[]Event, error) {
 	var events []Event
 
 	c.mutex.Lock()
+	now, err := timeNow()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, event := range c.events {
-		week := event.Date.Add((24 * time.Hour) * 7)
-		if event.Date.After(week) {
+		if inTimeSpan(now, now.Add((24*time.Hour)*7), event.Date) {
 			events = append(events, *event)
 		}
 	}
@@ -129,16 +137,20 @@ func (c *Calendar) ListEventsForWeek() *[]Event {
 	})
 	c.mutex.Unlock()
 
-	return &events
+	return &events, nil
 }
 
-func (c *Calendar) ListEventsForMonth() *[]Event {
+func (c *Calendar) ListEventsForMonth() (*[]Event, error) {
 	var events []Event
 
 	c.mutex.Lock()
+	now, err := timeNow()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, event := range c.events {
-		month := event.Date.Add((24 * time.Hour) * 30)
-		if event.Date.After(month) {
+		if inTimeSpan(now, now.Add((24*time.Hour)*30), event.Date) {
 			events = append(events, *event)
 		}
 	}
@@ -148,7 +160,7 @@ func (c *Calendar) ListEventsForMonth() *[]Event {
 	})
 	c.mutex.Unlock()
 
-	return &events
+	return &events, nil
 }
 
 func (c *Calendar) Delete(name string) error {
@@ -192,4 +204,16 @@ func (c *Calendar) isDateAlreadyExist(date time.Time) bool {
 	c.mutex.Unlock()
 
 	return false
+}
+
+func inTimeSpan(start, end, check time.Time) bool {
+	return check.After(start) && check.Before(end)
+}
+
+func timeNow() (time.Time, error) {
+	now, err := time.Parse(time.Now().Format("2006-01-02"), "2006-01-02")
+	if err != nil {
+		return time.Time{}, err
+	}
+	return now, err
 }
