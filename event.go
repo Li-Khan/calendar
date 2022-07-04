@@ -151,10 +151,15 @@ func (c *Calendar) ListEventsForMonth() *[]Event {
 	return &events
 }
 
-func (c *Calendar) Delete(name string) {
+func (c *Calendar) Delete(name string) error {
 	c.mutex.Lock()
+	if !c.isNameAlreadyExist(name) {
+		c.mutex.Unlock()
+		return ErrEventNotExist
+	}
 	delete(c.events, name)
 	c.mutex.Unlock()
+	return nil
 }
 
 func (c *Calendar) checkExist(event Event) error {
