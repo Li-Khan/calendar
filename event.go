@@ -65,11 +65,10 @@ func (c *Calendar) UpdateName(old string, new string) error {
 
 	return nil
 }
-func (c *Calendar) UpdateDate(name string, date time.Time) error {
+func (c *Calendar) UpdateDate(name string, date time.Time) {
 	c.mutex.Lock()
 	c.events[name].Date = date
 	c.mutex.Unlock()
-	return nil
 }
 
 func (c *Calendar) List() *[]Event {
